@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import time
 import slackweb
+import os
 
 Url="https://www.keibalab.jp/db/jockey/05212/"
 html = urlopen(Url)
@@ -37,7 +38,7 @@ for i in doyou.index:
     #print(tansho,",",ninki)
     time.sleep(1)
 
-slack = slackweb.Slack(url='WEBHOOK_URL')
+slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
 slack.notify(text="条件に合致するレースを報告します")    
 for i in doyou.index:
     slack.notify(text="第"+str(doyou['R'][i])+"レース"+str(doyou['レース名'][i])+"が"+df_tan_nin["人気"][i]+"番人気で、"
