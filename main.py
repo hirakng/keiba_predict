@@ -37,7 +37,7 @@ for i in doyou.index:
     #print(tansho,",",ninki)
     time.sleep(1)
 
-slack = slackweb.Slack(url="https://hooks.slack.com/services/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")
+slack = slackweb.Slack(url=WEBHOOK_URL)
 slack.notify(text="条件に合致するレースを報告します")    
 for i in doyou.index:
     slack.notify(text="第"+str(doyou['R'][i])+"レース"+str(doyou['レース名'][i])+"が"+df_tan_nin["人気"][i]+"番人気で、"
