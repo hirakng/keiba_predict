@@ -41,7 +41,7 @@ if doyou['馬'].isnull()[0]==False:
     slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
     slack.notify(text="条件に合致するレースを報告します")    
     for i in doyou.index:
-        slack.notify(text="第"+str(doyou['R'][i])+"レース"+str(doyou['レース名'][i])+"が"+df_tan_nin["人気"][i]+"番人気で、"
+        slack.notify(text="第"+str(doyou['R'][i])+"レース"+str(doyou['レース名'][i])+str(doyou['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
                     +"単勝は"+df_tan_nin["単勝"][i]+"です")
 else:
     slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
