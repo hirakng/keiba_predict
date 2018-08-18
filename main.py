@@ -5,20 +5,29 @@ import re
 import time
 import slackweb
 import os
+import datetime
+
 
 Url="https://www.keibalab.jp/db/jockey/05212/"
 html = urlopen(Url)
 bsObj = BeautifulSoup(html,"html.parser")
 
+#次のレース日付を計算
+now = datetime.datetime.now()
+nextSaturday= now - datetime.timedelta(days=5-now.weekday())
+nextSunday = now - datetime.timedelta(days=6-now.weekday())
+id_Sat = nextSaturday.strftime('%Y%m%d')
+id_Sun = nextSaturday.strftime('%Y%m%d')
+
 #テーブルを指定
-table = bsObj.find('table', id="20180818")
+table = bsObj.find('table', id=id_Sat)
 tables = pd.read_html(Url)
 doyou =tables[3]
 #距離の１文字目と以降に分割
 doyou['芝ダ'] = doyou[['コース']].apply(lambda x: x[0][0], axis=1)
 doyou['コース'] = doyou[['コース']].apply(lambda x: x[0][1:], axis=1).astype("int64")
 #抽出条件
-doyou = doyou[doyou['コース']>=1800]
+doyou = doyou[doyou['コース']>=2000]
 links = ["https://www.keibalab.jp"+x.get("href")+"umabashira.html"  for x in table.find_all("a") if x.get("itemprop")=="url"]
 links = [s for s in links if 'race' in s]
 
@@ -39,7 +48,7 @@ if doyou['馬'].isnull()[0]==False:
         time.sleep(1)
 
     slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
-    slack.notify(text="条件に合致するレースを報告します")    
+    slack.notify(text="次の土曜のレースで条件に合致するものを報告します")    
     for i in doyou.index:
         slack.notify(text="第"+str(doyou['R'][i])+"レース"+str(doyou['レース名'][i])+str(doyou['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
                     +"単勝は"+df_tan_nin["単勝"][i]+"です")
