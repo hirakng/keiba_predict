@@ -10,9 +10,9 @@ import datetime
 
 #次のレース日付を計算
 now = datetime.datetime.now()
-nextSaturday= now - datetime.timedelta(days=5-now.weekday())
-nextSunday = now - datetime.timedelta(days=6-now.weekday())
-id = [nextSaturday.strftime('%Y%m%d'),nextSaturday.strftime('%Y%m%d')]
+nextSaturday= now + datetime.timedelta(days=5-now.weekday())
+nextSunday = now + datetime.timedelta(days=6-now.weekday())
+id = [nextSaturday.strftime('%Y%m%d'),nextSunday.strftime('%Y%m%d')]
 youbi=["土曜","日曜"]
 jockey=["デムーロ","ルメール"]
 Url=["https://www.keibalab.jp/db/jockey/05212/","https://www.keibalab.jp/db/jockey/05339/"]
@@ -46,8 +46,12 @@ def getTanNin(daytable,links):
         tds = rows[1].findAll('td')
         td_no = 18 - daytable["馬"][i]
         tan_ninki=tds[td_no].get_text().replace('\n','').replace('\t','').replace(' ','')
-        tansho = re.split('[()]', tan_ninki)[0]
-        ninki = re.split('[()]', tan_ninki)[1]
+        if tan_ninki!="":
+            tansho = re.split('[()]', tan_ninki)[0]
+            ninki = re.split('[()]', tan_ninki)[1]
+        else:
+            tansho = "xx"
+            ninki = "xx"
         df_tan_nin = df_tan_nin.append(pd.DataFrame([[tansho, ninki]],columns=["単勝","人気"], index=[i]))
         #print(tansho,",",ninki)
         time.sleep(1)
@@ -59,38 +63,38 @@ def slackout(daytable,df_tan_nin,jockey,youbi):
     for i in daytable.index:
         slack.notify(text="第"+str(daytable['R'][i])+"レース"+str(daytable['レース名'][i])+str(daytable['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
                     +"単勝は"+df_tan_nin["単勝"][i]+"です")
-        
+#金、土、日のみ実行        
+if now.weekday() in [4,5,6]:
+    #メイン（デムーロ、ルメール）
+    for j in range(2):
+        html = urlopen(Url[j])
+        bsObj = BeautifulSoup(html,"html.parser")
 
-#メイン（デムーロ、ルメール）
-for j in range(2):
-    html = urlopen(Url[j])
-    bsObj = BeautifulSoup(html,"html.parser")
+        #土曜、日曜でループ
+        for i in range(2):
+            #テーブルを指定
+            table = bsObj.find('table', id=id[i])
 
-    #土曜、日曜でループ
-    for i in range(2):
-        #テーブルを指定
-        table = bsObj.find('table', id=id[i])
-
-        if table != None:
-            #次のレーステーブルがあれば実行
-            tables = pd.read_html(Url[j])
-            daytable = preprocessed(tables,i)
-            #抽出条件
-            daytable = extraction(daytable)
-            #レースのリンクを取得
-            links = getLinks(table)
-            #リンク先から人気・単勝を取得
-            if daytable['馬'].isnull().any()==False:
-                df_tan_nin = getTanNin(daytable,links)
-                slackout(daytable,df_tan_nin,jockey[j],youbi[i])
+            if table != None:
+                #次のレーステーブルがあれば実行
+                tables = pd.read_html(Url[j])
+                daytable = preprocessed(tables,i)
+                #抽出条件
+                daytable = extraction(daytable)
+                #レースのリンクを取得
+                links = getLinks(table)
+                #リンク先から人気・単勝を取得
+                if daytable['馬'].isnull().any()==False:
+                    df_tan_nin = getTanNin(daytable,links)
+                    slackout(daytable,df_tan_nin,jockey[j],youbi[i])
+                else:
+                    if i==0:
+                        slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
+                        slack.notify(text="馬番決定前です")    
             else:
                 if i==0:
                     slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
-                    slack.notify(text="馬番決定前です")    
-        else:
-            if i==0:
-                slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
-                slack.notify(text="翌週のレース情報がまだ出てません")
-        time.sleep(5)
+                    slack.notify(text="翌週のレース情報がまだ出てません")
+            time.sleep(5)
 
 
