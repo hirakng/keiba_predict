@@ -59,11 +59,14 @@ def getTanNin(daytable,links):
 
 def slackout(daytable,df_tan_nin,jockey,youbi):
     slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
-    slack.notify(text="*"+jockey+"の"+youbi+"のレースで条件に合致するものを報告します:racehorse:"+"*",mrkdwn= True)    
-    for i in daytable.index:
-        slack.notify(text="第"+str(daytable['R'][i])+"レース"+str(daytable['レース名'][i])+str(daytable['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
-                    +"単勝は"+df_tan_nin["単勝"][i]+"です")
-#金、土、日のみ実行        
+    if len(df_tan_nin)==0:
+        slack.notify(text="*"+jockey+"の"+youbi+"のレースで条件に合致するものはありません:racehorse:"+"*",mrkdwn= True)    
+    else:
+        slack.notify(text="*"+jockey+"の"+youbi+"のレースで条件に合致するものを報告します:racehorse:"+"*",mrkdwn= True)    
+        for i in daytable.index:
+            slack.notify(text="第"+str(daytable['R'][i])+"レース"+str(daytable['レース名'][i])+str(daytable['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
+                        +"単勝は"+df_tan_nin["単勝"][i]+"です")
+#金、土、日のみ実行         
 if now.weekday() in [4,5,6]:
     #メイン（デムーロ、ルメール）
     for j in range(2):
