@@ -45,7 +45,7 @@ def getTanNin(daytable,links):
         rows = megamoriTable.findAll('tr', attrs={'class': "seirei std9"})
         tds = rows[1].findAll('td')
         td_no = 18 - daytable["馬"][i]
-        tan_ninki=tds[td_no].get_text().replace('\n','').replace('\t','').replace(' ','')
+        tan_ninki=tds[td_no.astype(int)].get_text().replace('\n','').replace('\t','').replace(' ','')
         if tan_ninki!="":
             tansho = re.split('[()]', tan_ninki)[0]
             ninki = re.split('[()]', tan_ninki)[1]
@@ -91,13 +91,11 @@ if now.weekday() in [4,5,6]:
                     df_tan_nin = getTanNin(daytable,links)
                     slackout(daytable,df_tan_nin,jockey[j],youbi[i])
                 else:
-                    if i==0:
-                        slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
-                        slack.notify(text="馬番決定前です")    
-            else:
-                if i==0:
                     slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
-                    slack.notify(text="翌週のレース情報がまだ出てません")
+                    slack.notify(text="*"+jockey[j]+"の"+youbi[i]+"のレースは馬番決定前です")    
+            else:
+                slack = slackweb.Slack(url=os.environ.get('WEBHOOK_URL'))
+                slack.notify(text="*"+jockey[j]+"の"+youbi[i]+"の翌週のレース情報がまだ出てません")
             time.sleep(5)
 
 
