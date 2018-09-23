@@ -64,7 +64,7 @@ def slackout(daytable,df_tan_nin,jockey,youbi):
     else:
         slack.notify(text="*"+jockey+"の"+youbi+"のレースで条件に合致するものを報告します:racehorse:"+"*",mrkdwn= True)    
         for i in daytable.index:
-            slack.notify(text="第"+str(daytable['R'][i])+"レース"+str(daytable['レース名'][i])+str(daytable['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
+            slack.notify(text=daytable['場'][i]+"第"+str(daytable['R'][i])+"レース"+str(daytable['レース名'][i])+str(daytable['コース'][i])+"ｍが"+df_tan_nin["人気"][i]+"番人気で、"
                         +"単勝は"+df_tan_nin["単勝"][i]+"です")
 #金、土、日のみ実行         
 if now.weekday() in [4,5,6]:
