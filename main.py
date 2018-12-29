@@ -39,6 +39,7 @@ def getLinks(table):
 def getTanNin(daytable,links):
     df_tan_nin = pd.DataFrame(columns=["単勝","人気"])
     for i in daytable.index:
+        print(links[i])
         html = urlopen(links[i])
         bsObj = BeautifulSoup(html,"html.parser")
         megamoriTable =bsObj.findAll("table",{"class":"megamoriTable"})[0]
